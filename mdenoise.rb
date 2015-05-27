@@ -10,5 +10,8 @@ class Mdenoise < Formula
   def install
     system "g++", "-o","mdenoise","mdenoise.cpp","triangle.c"
     bin.install "mdenoise"
+    # Prepare manfile entry
+    mv "README","mdenoise.1"
+    man1.install "mdenoise.1"
   end
 end
