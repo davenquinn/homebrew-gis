@@ -1,9 +1,5 @@
-# Documentation: https://github.com/Homebrew/homebrew/blob/master/share/doc/homebrew/Formula-Cookbook.md
-#                http://www.rubydoc.info/github/Homebrew/homebrew/master/Formula
-# PLEASE REMOVE ALL GENERATED COMMENTS BEFORE SUBMITTING YOUR PULL REQUEST!
-
 class FixJp2 < Formula
-  desc "Formula to fix PDS JPEG2000 projection information for modern GDAL"
+  desc "Tool to fix PDS JPEG2000 projection information for modern GDAL (predominantly for HiRISE Mars imagery)"
   homepage "https://isis.astrogeology.usgs.gov/IsisSupport/index.php?topic=2339.0"
   url "https://trac.osgeo.org/gdal/zip-attachment/ticket/2706/"
   version "1.0"
