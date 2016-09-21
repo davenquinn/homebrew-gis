@@ -60,7 +60,7 @@ class Qgis216 < Formula
   depends_on SipBinary
   depends_on PyQtConfig
   depends_on "qca"
-  depends_on "qscintilla2" # will probably be a C++ lib deps in near future
+  depends_on "qscintilla2-qt4" # will probably be a C++ lib deps in near future
   depends_on "qwt"
   depends_on "qwtpolar"
   depends_on "gsl"
@@ -88,6 +88,7 @@ class Qgis216 < Formula
   end
 
   if build.with? "globe"
+    # this is pretty borked with OS X >= 10.10+
     depends_on "open-scene-graph" => ["with-qt"]
     depends_on "homebrew/science/osgearth"
   end
@@ -100,7 +101,7 @@ class Qgis216 < Formula
   # core processing plugin extras
   # see `grass` above
   depends_on "grass-64" if build.with? "grass6"
-  depends_on "orfeo-42" if build.with? "orfeo"
+  depends_on "orfeo-54" if build.with? "orfeo"
   depends_on "homebrew/science/r" => :optional
   depends_on "saga-gis" => :optional
   # TODO: LASTools straight build (2 reporting tools), or via `wine` (10 tools)
@@ -119,7 +120,7 @@ class Qgis216 < Formula
     qwtpolar_fw = Formula["qwtpolar"].opt_lib/"qwtpolar.framework"
     dev_fw = lib/"qgis-dev"
     dev_fw.mkpath
-    qsci_opt = Formula["qscintilla2"].opt_prefix
+    qsci_opt = Formula["qscintilla2-qt4"].opt_prefix
     args = std_cmake_args
     args << "-DCMAKE_BUILD_TYPE=RelWithDebInfo" if build.with? "debug" # override
     args += %W[
@@ -196,7 +197,6 @@ class Qgis216 < Formula
       opoo "`open-scene-graph` formula's keg not linked." unless osg.linked_keg.exist?
       # must be HOMEBREW_PREFIX/lib/osgPlugins-#.#.#, since all osg plugins are symlinked there
       args << "-DOSG_PLUGINS_PATH=#{HOMEBREW_PREFIX}/lib/osgPlugins-#{osg.version}"
-      args << "-DOSGEARTH_INCLUDE_DIR=#{osg.opt_prefix}/include"
     end
 
     args << "-DWITH_ORACLE=#{build.with?("oracle") ? "TRUE" : "FALSE"}"
@@ -269,6 +269,8 @@ class Qgis216 < Formula
     pthsep = File::PATH_SEPARATOR
     pypth = python_site_packages.to_s
     pths = %W[#{HOMEBREW_PREFIX/"bin"} /usr/bin /bin /usr/sbin /sbin /opt/X11/bin /usr/X11/bin].join(pthsep)
+    gdalpth = "#{Formula["gdal-20"].opt_lib}/python2.7/site-packages"
+    qscipth = "#{Formula["qscintilla2-qt4"].opt_lib}/python2.7/site-packages"
 
     unless opts.include? "with-isolation"
       pths = ORIGINAL_PATHS.join(pthsep)
@@ -282,7 +284,7 @@ class Qgis216 < Formula
     end
 
     # set install's lib/python2.7/site-packages first, so app will work if unlinked
-    pypth = "#{lib}/python2.7/site-packages" + pthsep + pypth
+    pypth = %W[#{qscipth} #{gdalpth} #{lib}/python2.7/site-packages #{pypth}].join(pthsep)
 
     envars = {
       :PATH => pths.to_s,
@@ -362,7 +364,7 @@ class Qgis216 < Formula
     bin_cmds = %W[#!/bin/sh\n]
     # setup shell-prepended env vars (may result in duplication of paths)
     envars[:PATH] = "#{HOMEBREW_PREFIX}/bin" + pthsep + "$PATH"
-    envars[:PYTHONPATH] = python_site_packages.to_s + pthsep + "$PYTHONPATH"
+    envars[:PYTHONPATH] = %W[#{gdalpth} #{python_site_packages} $PYTHONPATH].join(pthsep)
     envars.each { |key, value| bin_cmds << "export #{key}=#{value}" }
     bin_cmds << opt_prefix/"QGIS.app/Contents/MacOS/QGIS \"$@\""
     qgis_bin.write(bin_cmds.join("\n"))
