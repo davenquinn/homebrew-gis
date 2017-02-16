@@ -12,7 +12,7 @@ class Redo < Formula
       bin.install dn
     end
     Dir["man/man1/*"].each do |dn|
-      man.install dn
+      man1.install dn
     end
   end
 end
